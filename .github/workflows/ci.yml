@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency: ci-${{ github.ref }}
+
+jobs:
+  checks:
+    strategy:
+      matrix:
+        check:
+          - compile
+          - lint:ci
+          - prettier:ci
+          - test:ci
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ${{ matrix.check }}
+        run: npm run ${{ matrix.check }}
+
+  publish:
+    needs: checks
+    if: startsWith(github.repository, 'vlad-yakovlev/') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Release
+        run: npx semantic-release@22 --branches main
+        env:
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}

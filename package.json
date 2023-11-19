@@ -1,0 +1,115 @@
+{
+  "name": "@vlad-yakovlev/poker",
+  "version": "0.0.0",
+  "description": "Telegram MarkdownV2 parser",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "prepare": "husky install",
+    "build": "tsc",
+    "compile": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:ci": "DEBUG=eslint:cli-engine eslint .",
+    "prettier": "prettier --write '**/*.(ts|js|md|json)'",
+    "prettier:ci": "prettier --check '**/*.(ts|js|md|json)'",
+    "test": "jest --coverage",
+    "test:ci": "jest"
+  },
+  "repository": "https://github.com/vlad-yakovlev/poker.git",
+  "keywords": [
+    "telegram",
+    "markdown",
+    "parser",
+    "md"
+  ],
+  "author": "Vladislav Yakovlev",
+  "license": "MIT",
+  "bugs": "https://github.com/vlad-yakovlev/poker/issues",
+  "homepage": "https://github.com/vlad-yakovlev/poker#readme",
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.2",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^8.0.3",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.1.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "extends": [
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking",
+      "plugin:@typescript-eslint/strict",
+      "prettier"
+    ],
+    "rules": {
+      "@typescript-eslint/no-invalid-void-type": [
+        "error",
+        {
+          "allowInGenericTypeArguments": true,
+          "allowAsThisParameter": true
+        }
+      ],
+      "@typescript-eslint/restrict-template-expressions": "off"
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.test.ts",
+          "testUtils/**/*"
+        ],
+        "rules": {
+          "@typescript-eslint/no-explicit-any": "off",
+          "@typescript-eslint/no-unsafe-argument": "off",
+          "@typescript-eslint/no-unsafe-assignment": "off",
+          "@typescript-eslint/no-unsafe-call": "off",
+          "@typescript-eslint/no-unsafe-member-access": "off"
+        }
+      }
+    ]
+  },
+  "prettier": {
+    "plugins": [
+      "@trivago/prettier-plugin-sort-imports"
+    ],
+    "semi": false,
+    "singleQuote": true,
+    "importOrder": [
+      "^\\.\\./",
+      "^\\./"
+    ],
+    "importOrderSortSpecifiers": true
+  },
+  "jest": {
+    "preset": "ts-jest/presets/js-with-ts-esm",
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts"
+    ]
+  },
+  "lint-staged": {
+    "**/*.(js|ts)": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.(md|json)": "prettier --write"
+  }
+}
