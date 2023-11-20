@@ -12,20 +12,20 @@ export type RoomParams<RoomPayload = any, PlayerPayload = any> = {
   startingBaseBetAmount: number
 }
 
-type Winner<PlayerPayload> = {
-  player: Player<PlayerPayload>
-  wonAmount: number
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type RoomEvents<RoomPayload, PlayerPayload> = {
   nextDeal: (data: {
-    playersInDeal: Player<PlayerPayload>[]
+    players: Player<PlayerPayload>[]
     dealer: Player<PlayerPayload>
     smallBlind: Player<PlayerPayload>
     bigBlind: Player<PlayerPayload>
   }) => void
-  dealEnded: (data: { winners: Winner<PlayerPayload>[] }) => void
+  dealEnded: (data: {
+    players: {
+      player: Player<PlayerPayload>
+      wonAmount: number
+    }[]
+  }) => void
   nextTurn: (data: { player: Player<PlayerPayload> }) => void
   gameEnded: () => void
   fold: (data: { player: Player<PlayerPayload> }) => void
@@ -179,7 +179,7 @@ export class Room<
     await this.save()
 
     this.emit('nextDeal', {
-      playersInDeal: this.players.filter((player) => !player.hasLost),
+      players: this.players.filter((player) => !player.hasLost),
       dealer: this.players[this.dealerIndex],
       smallBlind: this.players[smallBlindIndex],
       bigBlind: this.players[bigBlindIndex],
@@ -365,14 +365,41 @@ export class Room<
       }
     })
 
+    const roomCopy = new Room<RoomPayload, PlayerPayload>(
+      {
+        storage: {
+          get: () => Promise.resolve(undefined),
+          set: () => Promise.resolve(),
+          delete: () => Promise.resolve(),
+        },
+        startingBaseBetAmount: this.startingBaseBetAmount,
+      },
+      {
+        id: this.id,
+        cards: this.cards,
+        round: this.round,
+        dealsCount: this.dealsCount,
+        dealerIndex: this.dealerIndex,
+        currentPlayerIndex: this.currentPlayerIndex,
+        players: this.players.map((player) => ({
+          id: player.id,
+          cards: player.cards,
+          balance: player.balance,
+          betAmount: player.betAmount,
+          hasFolded: player.hasFolded,
+          hasLost: player.hasLost,
+          hasTurned: player.hasTurned,
+          payload: player.payload,
+        })),
+        payload: this.payload,
+      },
+    )
+
     this.emit('dealEnded', {
-      winners: this.players.reduce<Winner<PlayerPayload>[]>((acc, player) => {
-        const wonAmount = winners.get(player.id) ?? 0
-        if (wonAmount) {
-          acc.push({ player, wonAmount })
-        }
-        return acc
-      }, []),
+      players: roomCopy.players.map((player) => ({
+        player,
+        wonAmount: winners.get(player.id) ?? 0,
+      })),
     })
 
     if (this.players.filter((player) => !player.hasLost).length < 2) {
