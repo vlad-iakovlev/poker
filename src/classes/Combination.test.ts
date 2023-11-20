@@ -1,14 +1,14 @@
-import { POKER_COMBINATION_LEVEL } from '../types/card.js'
-import { PokerCombination } from './PokerCombination.js'
-import { PokerSubset } from './PokerSubset.js'
+import { COMBINATION_LEVEL } from '../types/card.js'
+import { Combination } from './Combination.js'
+import { Subset } from './Subset.js'
 
-describe('PokerCombination', () => {
+describe('Combination', () => {
   describe('#constructor', () => {
     it('should set level and subset', () => {
-      const level = POKER_COMBINATION_LEVEL.PAIR
-      const subset = new PokerSubset([1, 2, 3, 4, 5])
+      const level = COMBINATION_LEVEL.PAIR
+      const subset = new Subset([1, 2, 3, 4, 5])
 
-      const combination = new PokerCombination(level, subset)
+      const combination = new Combination(level, subset)
 
       expect(combination.level).toBe(level)
       expect(combination.subset).toBe(subset)
@@ -17,10 +17,10 @@ describe('PokerCombination', () => {
 
   describe('#weight', () => {
     it('should return weight', () => {
-      const level = POKER_COMBINATION_LEVEL.PAIR
-      const subset = new PokerSubset([1, 2, 3, 4, 5])
+      const level = COMBINATION_LEVEL.PAIR
+      const subset = new Subset([1, 2, 3, 4, 5])
 
-      const combination = new PokerCombination(level, subset)
+      const combination = new Combination(level, subset)
 
       expect(combination.weight).toBe(10000000101)
     })
@@ -38,12 +38,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 0,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.ROYAL_FLUSH,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.ROYAL_FLUSH,
+          new Subset([
             (12 << 2) + 0,
             (11 << 2) + 0,
             (10 << 2) + 0,
@@ -65,12 +65,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 0,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.STRAIGHT_FLUSH,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.STRAIGHT_FLUSH,
+          new Subset([
             (11 << 2) + 0,
             (10 << 2) + 0,
             (9 << 2) + 0,
@@ -92,12 +92,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 0,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.FOUR_OF_KIND,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.FOUR_OF_KIND,
+          new Subset([
             (8 << 2) + 3,
             (8 << 2) + 2,
             (8 << 2) + 1,
@@ -119,12 +119,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 2,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.FULL_HOUSE,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.FULL_HOUSE,
+          new Subset([
             (9 << 2) + 3,
             (9 << 2) + 2,
             (9 << 2) + 0,
@@ -146,12 +146,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 0,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.FLUSH,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.FLUSH,
+          new Subset([
             (11 << 2) + 0,
             (10 << 2) + 0,
             (9 << 2) + 0,
@@ -173,12 +173,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 3,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.STRAIGHT,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.STRAIGHT,
+          new Subset([
             (11 << 2) + 0,
             (10 << 2) + 0,
             (9 << 2) + 3,
@@ -200,12 +200,12 @@ describe('PokerCombination', () => {
         (9 << 2) + 2,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.THREE_OF_KIND,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.THREE_OF_KIND,
+          new Subset([
             (9 << 2) + 3,
             (9 << 2) + 2,
             (9 << 2) + 0,
@@ -227,12 +227,12 @@ describe('PokerCombination', () => {
         (10 << 2) + 0,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.TWO_PAIR,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.TWO_PAIR,
+          new Subset([
             (9 << 2) + 3,
             (9 << 2) + 0,
             (8 << 2) + 2,
@@ -254,12 +254,12 @@ describe('PokerCombination', () => {
         (10 << 2) + 2,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.PAIR,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.PAIR,
+          new Subset([
             (8 << 2) + 2,
             (8 << 2) + 1,
             (11 << 2) + 0,
@@ -281,12 +281,12 @@ describe('PokerCombination', () => {
         (10 << 2) + 2,
       ]
 
-      const combination = PokerCombination.getBest(cards)
+      const combination = Combination.getBest(cards)
 
       expect(combination).toStrictEqual(
-        new PokerCombination(
-          POKER_COMBINATION_LEVEL.HIGH_CARD,
-          new PokerSubset([
+        new Combination(
+          COMBINATION_LEVEL.HIGH_CARD,
+          new Subset([
             (11 << 2) + 0,
             (10 << 2) + 2,
             (9 << 2) + 0,

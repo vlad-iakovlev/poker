@@ -1,11 +1,11 @@
-export enum POKER_CARD_SUIT {
+export enum CARD_SUIT {
   CLUBS,
   DIAMONDS,
   HEARTS,
   SPADES,
 }
 
-export enum POKER_CARD_VALUE {
+export enum CARD_VALUE {
   TWO,
   THREE,
   FOUR,
@@ -21,7 +21,7 @@ export enum POKER_CARD_VALUE {
   ACE,
 }
 
-export enum POKER_COMBINATION_LEVEL {
+export enum COMBINATION_LEVEL {
   HIGH_CARD,
   PAIR,
   TWO_PAIR,

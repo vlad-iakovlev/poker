@@ -1,9 +1,9 @@
-import { PokerSubset } from './PokerSubset.js'
+import { Subset } from './Subset.js'
 
-describe('PokerSubset', () => {
+describe('Subset', () => {
   describe('#constructor', () => {
     it('should set cards', () => {
-      const subset = new PokerSubset([1, 2, 3, 4, 5])
+      const subset = new Subset([1, 2, 3, 4, 5])
 
       expect(subset.cards).toStrictEqual([1, 2, 3, 4, 5])
     })
@@ -11,7 +11,7 @@ describe('PokerSubset', () => {
 
   describe('#royalFlush', () => {
     it('should return undefined when subset is not starts with ace', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (9 << 2) + 1,
         (8 << 2) + 1,
@@ -23,7 +23,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return undefined when subset is starts with ace but not a flush', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (12 << 2) + 1,
         (11 << 2) + 1,
         (10 << 2) + 0,
@@ -35,7 +35,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return undefined when subset is starts with ace and a flush but not a straight', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (12 << 2) + 1,
         (11 << 2) + 1,
         (10 << 2) + 1,
@@ -47,7 +47,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is starts with ace and a flush and a strait', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (12 << 2) + 1,
         (11 << 2) + 1,
         (10 << 2) + 1,
@@ -56,7 +56,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.royalFlush).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (12 << 2) + 1,
           (11 << 2) + 1,
           (10 << 2) + 1,
@@ -69,7 +69,7 @@ describe('PokerSubset', () => {
 
   describe('#straightFlush', () => {
     it('should return undefined when subset is not a flush', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -81,7 +81,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return undefined when subset is a flush but not a strait', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 1,
@@ -93,7 +93,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a flush and a strait', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (9 << 2) + 1,
         (8 << 2) + 1,
@@ -102,7 +102,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.straightFlush).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (10 << 2) + 1,
           (9 << 2) + 1,
           (8 << 2) + 1,
@@ -115,7 +115,7 @@ describe('PokerSubset', () => {
 
   describe('#fourOfKind', () => {
     it('should return undefined when subset is not a four of a kind', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -127,7 +127,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a four of a kind', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (4 << 2) + 0,
         (2 << 2) + 0,
         (2 << 2) + 1,
@@ -136,7 +136,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.fourOfKind).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (2 << 2) + 0,
           (2 << 2) + 1,
           (2 << 2) + 2,
@@ -149,7 +149,7 @@ describe('PokerSubset', () => {
 
   describe('#fullHouse', () => {
     it('should return undefined when subset is not a full house', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -161,7 +161,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a full house #1', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (4 << 2) + 0,
         (4 << 2) + 1,
         (4 << 2) + 2,
@@ -170,7 +170,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.fullHouse).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (4 << 2) + 0,
           (4 << 2) + 1,
           (4 << 2) + 2,
@@ -181,7 +181,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a full house #2', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (4 << 2) + 0,
         (4 << 2) + 1,
         (2 << 2) + 1,
@@ -190,7 +190,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.fullHouse).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (2 << 2) + 1,
           (2 << 2) + 2,
           (2 << 2) + 3,
@@ -203,7 +203,7 @@ describe('PokerSubset', () => {
 
   describe('#flush', () => {
     it('should return undefined when subset is not a flush', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -215,7 +215,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a flush', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 1,
@@ -224,7 +224,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.flush).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (10 << 2) + 1,
           (8 << 2) + 1,
           (6 << 2) + 1,
@@ -237,7 +237,7 @@ describe('PokerSubset', () => {
 
   describe('#straight', () => {
     it('should return undefined when subset is not a straight', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -249,7 +249,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a straight', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (9 << 2) + 1,
         (8 << 2) + 1,
@@ -258,7 +258,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.straight).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (10 << 2) + 1,
           (9 << 2) + 1,
           (8 << 2) + 1,
@@ -269,7 +269,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a straight with ace in the beginning', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (12 << 2) + 1,
         (3 << 2) + 1,
         (2 << 2) + 0,
@@ -278,7 +278,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.straight).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (3 << 2) + 1,
           (2 << 2) + 0,
           (1 << 2) + 1,
@@ -291,7 +291,7 @@ describe('PokerSubset', () => {
 
   describe('#threeOfKind', () => {
     it('should return undefined when subset is not a three of a kind', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -303,7 +303,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a three of a kind', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (4 << 2) + 0,
         (2 << 2) + 0,
         (2 << 2) + 1,
@@ -312,7 +312,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.threeOfKind).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (2 << 2) + 0,
           (2 << 2) + 1,
           (2 << 2) + 2,
@@ -325,7 +325,7 @@ describe('PokerSubset', () => {
 
   describe('#twoPair', () => {
     it('should return undefined when subset is not a two pair', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -337,7 +337,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a two pair', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (4 << 2) + 0,
         (2 << 2) + 0,
         (2 << 2) + 1,
@@ -346,7 +346,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.twoPair).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (2 << 2) + 0,
           (2 << 2) + 1,
           (3 << 2) + 2,
@@ -359,7 +359,7 @@ describe('PokerSubset', () => {
 
   describe('#pair', () => {
     it('should return undefined when subset is not a pair', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (8 << 2) + 1,
         (6 << 2) + 0,
@@ -371,7 +371,7 @@ describe('PokerSubset', () => {
     })
 
     it('should return subset when subset is a pair', () => {
-      const subset = new PokerSubset([
+      const subset = new Subset([
         (10 << 2) + 1,
         (4 << 2) + 1,
         (4 << 2) + 0,
@@ -380,7 +380,7 @@ describe('PokerSubset', () => {
       ])
 
       expect(subset.pair).toStrictEqual(
-        new PokerSubset([
+        new Subset([
           (4 << 2) + 1,
           (4 << 2) + 0,
           (10 << 2) + 1,
@@ -393,48 +393,48 @@ describe('PokerSubset', () => {
 
   describe('#getSubsets', () => {
     it('should accept 5 cards', () => {
-      const subsets = PokerSubset.getSubsets([1, 2, 3, 4, 5])
+      const subsets = Subset.getSubsets([1, 2, 3, 4, 5])
 
-      expect(subsets).toStrictEqual([new PokerSubset([1, 2, 3, 4, 5])])
+      expect(subsets).toStrictEqual([new Subset([1, 2, 3, 4, 5])])
     })
 
     it('should accept less than 5 cards', () => {
-      const subsets = PokerSubset.getSubsets([1, 2, 3, 4])
+      const subsets = Subset.getSubsets([1, 2, 3, 4])
 
       expect(subsets).toStrictEqual([])
     })
 
     it('should accept 0 cards', () => {
-      const subsets = PokerSubset.getSubsets([])
+      const subsets = Subset.getSubsets([])
 
       expect(subsets).toStrictEqual([])
     })
 
     it('should accept more than 5 cards', () => {
-      const subsets = PokerSubset.getSubsets([1, 2, 3, 4, 5, 6, 7])
+      const subsets = Subset.getSubsets([1, 2, 3, 4, 5, 6, 7])
 
       expect(subsets).toStrictEqual([
-        new PokerSubset([1, 2, 3, 4, 5]),
-        new PokerSubset([1, 2, 3, 4, 6]),
-        new PokerSubset([1, 2, 3, 4, 7]),
-        new PokerSubset([1, 2, 3, 5, 6]),
-        new PokerSubset([1, 2, 3, 5, 7]),
-        new PokerSubset([1, 2, 3, 6, 7]),
-        new PokerSubset([1, 2, 4, 5, 6]),
-        new PokerSubset([1, 2, 4, 5, 7]),
-        new PokerSubset([1, 2, 4, 6, 7]),
-        new PokerSubset([1, 2, 5, 6, 7]),
-        new PokerSubset([1, 3, 4, 5, 6]),
-        new PokerSubset([1, 3, 4, 5, 7]),
-        new PokerSubset([1, 3, 4, 6, 7]),
-        new PokerSubset([1, 3, 5, 6, 7]),
-        new PokerSubset([1, 4, 5, 6, 7]),
-        new PokerSubset([2, 3, 4, 5, 6]),
-        new PokerSubset([2, 3, 4, 5, 7]),
-        new PokerSubset([2, 3, 4, 6, 7]),
-        new PokerSubset([2, 3, 5, 6, 7]),
-        new PokerSubset([2, 4, 5, 6, 7]),
-        new PokerSubset([3, 4, 5, 6, 7]),
+        new Subset([1, 2, 3, 4, 5]),
+        new Subset([1, 2, 3, 4, 6]),
+        new Subset([1, 2, 3, 4, 7]),
+        new Subset([1, 2, 3, 5, 6]),
+        new Subset([1, 2, 3, 5, 7]),
+        new Subset([1, 2, 3, 6, 7]),
+        new Subset([1, 2, 4, 5, 6]),
+        new Subset([1, 2, 4, 5, 7]),
+        new Subset([1, 2, 4, 6, 7]),
+        new Subset([1, 2, 5, 6, 7]),
+        new Subset([1, 3, 4, 5, 6]),
+        new Subset([1, 3, 4, 5, 7]),
+        new Subset([1, 3, 4, 6, 7]),
+        new Subset([1, 3, 5, 6, 7]),
+        new Subset([1, 4, 5, 6, 7]),
+        new Subset([2, 3, 4, 5, 6]),
+        new Subset([2, 3, 4, 5, 7]),
+        new Subset([2, 3, 4, 6, 7]),
+        new Subset([2, 3, 5, 6, 7]),
+        new Subset([2, 4, 5, 6, 7]),
+        new Subset([3, 4, 5, 6, 7]),
       ])
     })
   })

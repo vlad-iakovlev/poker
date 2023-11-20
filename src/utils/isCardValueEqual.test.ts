@@ -1,14 +1,14 @@
-import { isPokerCardValueEqual } from './isPokerCardValueEqual.js'
+import { isCardValueEqual } from './isCardValueEqual.js'
 
-describe('#isPokerCardValueEqual', () => {
+describe('#isCardValueEqual', () => {
   it('should return true if the values of two cards are equal', () => {
-    const isEqual = isPokerCardValueEqual(13, 15)
+    const isEqual = isCardValueEqual(13, 15)
 
     expect(isEqual).toBe(true)
   })
 
   it('should return false if the values of two cards are not equal', () => {
-    const isEqual = isPokerCardValueEqual(13, 17)
+    const isEqual = isCardValueEqual(13, 17)
 
     expect(isEqual).toBe(false)
   })

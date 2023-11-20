@@ -1,12 +1,16 @@
-import { PokerPlayer } from '../types/state.js'
-import { PokerCombination } from './PokerCombination.js'
-import { PokerStateManager } from './PokerStateManager.js'
+import { PlayerData } from '../types/state.js'
+import { Combination } from './Combination.js'
+import { Room } from './Room.js'
 
-export class PokerPlayerManager {
-  pokerStateManager: PokerStateManager
+export type PlayerParams = {
+  id: string
+  room: Room
+}
+
+export class Player {
+  room: Room
 
   id: string
-  userId: string
   cards: number[]
   balance: number
   betAmount: number
@@ -14,11 +18,10 @@ export class PokerPlayerManager {
   hasLost: boolean
   hasTurned: boolean
 
-  constructor(pokerStateManager: PokerStateManager, playerData: PokerPlayer) {
-    this.pokerStateManager = pokerStateManager
+  constructor(room: Room, playerData: PlayerData) {
+    this.room = room
 
     this.id = playerData.id
-    this.userId = playerData.userId
     this.cards = playerData.cards
     this.balance = playerData.balance
     this.betAmount = playerData.betAmount
@@ -28,19 +31,16 @@ export class PokerPlayerManager {
   }
 
   // TODO: memoize
-  get bestCombination(): PokerCombination | undefined {
-    return PokerCombination.getBest([
-      ...this.pokerStateManager.cards,
-      ...this.cards,
-    ])
+  get bestCombination(): Combination | undefined {
+    return Combination.getBest([...this.room.cards, ...this.cards])
   }
 
   get callAmount(): number {
-    return this.pokerStateManager.requiredBetAmount - this.betAmount
+    return this.room.requiredBetAmount - this.betAmount
   }
 
   get minRaiseAmount(): number {
-    return this.pokerStateManager.baseBetAmount
+    return this.room.baseBetAmount
   }
 
   get maxRaiseAmount(): number {

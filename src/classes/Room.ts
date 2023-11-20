@@ -1,107 +1,98 @@
 import { EventEmitter } from 'eventemitter3'
 import * as R from 'remeda'
 import { ERROR_CODE } from '../types/error.js'
-import { POKER_ROUND, PokerState, PokerStateStorage } from '../types/state.js'
+import { ROUND, RoomData, RoomStorage } from '../types/state.js'
 import { shuffle } from '../utils/shuffle.js'
-import { PokerError } from './PokerError.js'
-import { PokerPlayerManager } from './PokerPlayerManger.js'
+import { BaseError } from './BaseError.js'
+import { Player } from './Player.js'
 
-export type PokerStateManagerParams = {
-  storage: PokerStateStorage
+export type RoomParams = {
+  storage: RoomStorage
   startingBaseBetAmount: number
 }
 
-export type PokerStateManagerEvents = {
+export type RoomEvents = {
   nextDeal: (data: {
     dealerId: string
     smallBlindId: string
     bigBlindId: string
   }) => void
   dealEnded: (data: { winners: Record<string, number> }) => void
-  nextTurn: (data: { userId: string }) => void
+  nextTurn: (data: { playerId: string }) => void
   gameEnded: () => void
-  fold: (data: { userId: string }) => void
-  check: (data: { userId: string }) => void
-  call: (data: { userId: string }) => void
-  raise: (data: { userId: string; amount: number }) => void
-  allIn: (data: { userId: string }) => void
+  fold: (data: { playerId: string }) => void
+  check: (data: { playerId: string }) => void
+  call: (data: { playerId: string }) => void
+  raise: (data: { playerId: string; amount: number }) => void
+  allIn: (data: { playerId: string }) => void
 }
 
-export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
-  storage: PokerStateStorage
+export class Room extends EventEmitter<RoomEvents> {
+  storage: RoomStorage
   startingBaseBetAmount: number
 
   id: string
-  roomId: string
   cards: number[]
-  round: POKER_ROUND
+  round: ROUND
   dealsCount: number
   dealerIndex: number
   currentPlayerIndex: number
-  players: PokerPlayerManager[]
+  players: Player[]
 
-  private constructor(params: PokerStateManagerParams, stateData: PokerState) {
+  private constructor(params: RoomParams, roomData: RoomData) {
     super()
 
     this.storage = params.storage
     this.startingBaseBetAmount = params.startingBaseBetAmount
 
-    this.id = stateData.id
-    this.roomId = stateData.roomId
-    this.cards = stateData.cards
-    this.round = stateData.round
-    this.dealsCount = stateData.dealsCount
-    this.dealerIndex = stateData.dealerIndex
-    this.currentPlayerIndex = stateData.currentPlayerIndex
-    this.players = stateData.players.map(
-      (playerData) => new PokerPlayerManager(this, playerData),
+    this.id = roomData.id
+    this.cards = roomData.cards
+    this.round = roomData.round
+    this.dealsCount = roomData.dealsCount
+    this.dealerIndex = roomData.dealerIndex
+    this.currentPlayerIndex = roomData.currentPlayerIndex
+    this.players = roomData.players.map(
+      (playerData) => new Player(this, playerData),
     )
   }
 
-  static async loadByTgChatIdOrCreate(
-    params: PokerStateManagerParams,
-    roomId: string,
-  ): Promise<PokerStateManager> {
-    const stateData = await params.storage.upsertRoom({
-      where: {
-        roomId,
-      },
-      create: {
-        roomId,
-        cards: [],
-        round: POKER_ROUND.PREFLOP,
-        dealsCount: 0,
-        dealerIndex: 0,
-        currentPlayerIndex: 0,
-      },
-      update: {},
-    })
+  static async create(id: string, params: RoomParams): Promise<Room> {
+    const roomData: RoomData = {
+      id,
+      cards: [],
+      round: ROUND.PREFLOP,
+      dealsCount: 0,
+      dealerIndex: 0,
+      currentPlayerIndex: 0,
+      players: [],
+    }
+    await params.storage.set(id, roomData)
+    return new Room(params, roomData)
+  }
 
-    return new PokerStateManager(params, stateData)
+  static async load(id: string, params: RoomParams): Promise<Room | undefined> {
+    const roomData = await params.storage.get(id)
+    if (!roomData) return
+    return new Room(params, roomData)
   }
 
   async save() {
-    await this.storage.updateRoom({
-      where: {
-        id: this.id,
-      },
-      data: {
-        cards: this.cards,
-        round: this.round,
-        dealsCount: this.dealsCount,
-        dealerIndex: this.dealerIndex,
-        currentPlayerIndex: this.currentPlayerIndex,
-        players: this.players.map((player) => ({
-          id: player.id,
-          userId: player.userId,
-          cards: player.cards,
-          balance: player.balance,
-          betAmount: player.betAmount,
-          hasFolded: player.hasFolded,
-          hasLost: player.hasLost,
-          hasTurned: player.hasTurned,
-        })),
-      },
+    await this.storage.set(this.id, {
+      id: this.id,
+      cards: this.cards,
+      round: this.round,
+      dealsCount: this.dealsCount,
+      dealerIndex: this.dealerIndex,
+      currentPlayerIndex: this.currentPlayerIndex,
+      players: this.players.map((player) => ({
+        id: player.id,
+        cards: player.cards,
+        balance: player.balance,
+        betAmount: player.betAmount,
+        hasFolded: player.hasFolded,
+        hasLost: player.hasLost,
+        hasTurned: player.hasTurned,
+      })),
     })
   }
 
@@ -117,31 +108,29 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
     return Math.max(...this.players.map((player) => player.betAmount))
   }
 
-  get currentPlayer(): PokerPlayerManager {
+  get currentPlayer(): Player {
     return this.players[this.currentPlayerIndex]
   }
 
-  async addPlayer(params: { userId: string; balance: number }) {
-    const playerData = await this.storage.createPlayer({
-      data: {
-        stateId: this.id,
-        userId: params.userId,
+  async addPlayer(id: string, params: { balance: number }) {
+    this.players.push(
+      new Player(this, {
+        id,
         cards: [],
         balance: params.balance,
         betAmount: 0,
         hasFolded: false,
         hasLost: false,
         hasTurned: false,
-      },
-    })
-
-    this.players.push(new PokerPlayerManager(this, playerData))
+      }),
+    )
+    await this.save()
   }
 
   async dealCards() {
     const deck = shuffle(R.range(0, 52))
     this.dealsCount++
-    this.round = POKER_ROUND.PREFLOP
+    this.round = ROUND.PREFLOP
     this.cards = deck.splice(0, 5)
     this.players.forEach((player) => {
       player.betAmount = 0
@@ -159,106 +148,101 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
     await this.save()
 
     this.emit('nextDeal', {
-      dealerId: this.players[this.dealerIndex].userId,
-      smallBlindId: this.players[smallBlindIndex].userId,
-      bigBlindId: this.players[bigBlindIndex].userId,
+      dealerId: this.players[this.dealerIndex].id,
+      smallBlindId: this.players[smallBlindIndex].id,
+      bigBlindId: this.players[bigBlindIndex].id,
     })
     await this.nextTurn()
   }
 
   async endGame() {
     this.emit('gameEnded')
-
-    await this.storage.deleteRoom({
-      where: {
-        id: this.id,
-      },
-    })
+    await this.storage.delete(this.id)
   }
 
-  async fold(userId: string) {
-    if (this.currentPlayer.userId !== userId) {
-      throw new PokerError(ERROR_CODE.WRONG_TURN)
+  async fold(playerId: string) {
+    if (this.currentPlayer.id !== playerId) {
+      throw new BaseError(ERROR_CODE.WRONG_TURN)
     }
 
     if (!this.currentPlayer.canFold) {
-      throw new PokerError(ERROR_CODE.FOLD_NOT_ALLOWED)
+      throw new BaseError(ERROR_CODE.FOLD_NOT_ALLOWED)
     }
 
     this.currentPlayer.hasFolded = true
     this.currentPlayer.hasTurned = true
-    this.emit('fold', { userId })
+    this.emit('fold', { playerId })
 
     await this.nextTurn()
   }
 
-  async check(userId: string) {
-    if (this.currentPlayer.userId !== userId) {
-      throw new PokerError(ERROR_CODE.WRONG_TURN)
+  async check(playerId: string) {
+    if (this.currentPlayer.id !== playerId) {
+      throw new BaseError(ERROR_CODE.WRONG_TURN)
     }
 
     if (!this.currentPlayer.canCheck) {
-      throw new PokerError(ERROR_CODE.CHECK_NOT_ALLOWED)
+      throw new BaseError(ERROR_CODE.CHECK_NOT_ALLOWED)
     }
 
     this.currentPlayer.hasTurned = true
-    this.emit('check', { userId })
+    this.emit('check', { playerId })
 
     await this.nextTurn()
   }
 
-  async call(userId: string) {
-    if (this.currentPlayer.userId !== userId) {
-      throw new PokerError(ERROR_CODE.WRONG_TURN)
+  async call(playerId: string) {
+    if (this.currentPlayer.id !== playerId) {
+      throw new BaseError(ERROR_CODE.WRONG_TURN)
     }
 
     if (!this.currentPlayer.canCall) {
-      throw new PokerError(ERROR_CODE.CALL_NOT_ALLOWED)
+      throw new BaseError(ERROR_CODE.CALL_NOT_ALLOWED)
     }
 
     this.currentPlayer.increaseBet(this.currentPlayer.callAmount)
     this.currentPlayer.hasTurned = true
-    this.emit('call', { userId })
+    this.emit('call', { playerId })
 
     await this.nextTurn()
   }
 
-  async raise(userId: string, amount: number) {
-    if (this.currentPlayer.userId !== userId) {
-      throw new PokerError(ERROR_CODE.WRONG_TURN)
+  async raise(playerId: string, amount: number) {
+    if (this.currentPlayer.id !== playerId) {
+      throw new BaseError(ERROR_CODE.WRONG_TURN)
     }
 
     if (!this.currentPlayer.canRaise) {
-      throw new PokerError(ERROR_CODE.RAISE_NOT_ALLOWED)
+      throw new BaseError(ERROR_CODE.RAISE_NOT_ALLOWED)
     }
 
     if (amount < this.currentPlayer.minRaiseAmount) {
-      throw new PokerError(ERROR_CODE.RAISE_AMOUNT_TOO_SMALL)
+      throw new BaseError(ERROR_CODE.RAISE_AMOUNT_TOO_SMALL)
     }
 
     if (amount > this.currentPlayer.maxRaiseAmount) {
-      throw new PokerError(ERROR_CODE.RAISE_AMOUNT_TOO_BIG)
+      throw new BaseError(ERROR_CODE.RAISE_AMOUNT_TOO_BIG)
     }
 
     this.currentPlayer.increaseBet(this.currentPlayer.callAmount + amount)
     this.currentPlayer.hasTurned = true
-    this.emit('raise', { userId, amount })
+    this.emit('raise', { playerId, amount })
 
     await this.nextTurn()
   }
 
-  async allIn(userId: string) {
-    if (this.currentPlayer.userId !== userId) {
-      throw new PokerError(ERROR_CODE.WRONG_TURN)
+  async allIn(playerId: string) {
+    if (this.currentPlayer.id !== playerId) {
+      throw new BaseError(ERROR_CODE.WRONG_TURN)
     }
 
     if (!this.currentPlayer.canAllIn) {
-      throw new PokerError(ERROR_CODE.ALL_IN_NOT_ALLOWED)
+      throw new BaseError(ERROR_CODE.ALL_IN_NOT_ALLOWED)
     }
 
     this.currentPlayer.increaseBet(this.currentPlayer.balance)
     this.currentPlayer.hasTurned = true
-    this.emit('allIn', { userId })
+    this.emit('allIn', { playerId })
 
     await this.nextTurn()
   }
@@ -282,7 +266,7 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
           (player.hasTurned && player.betAmount === this.requiredBetAmount),
       )
     ) {
-      if (this.round === POKER_ROUND.RIVER) {
+      if (this.round === ROUND.RIVER) {
         return this.endDeal()
       }
 
@@ -294,7 +278,7 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
     this.currentPlayerIndex = this.getNextPlayerIndex(this.currentPlayerIndex)
     await this.save()
 
-    this.emit('nextTurn', { userId: this.currentPlayer.userId })
+    this.emit('nextTurn', { playerId: this.currentPlayer.id })
   }
 
   async endDeal() {
@@ -322,19 +306,19 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
         if (weight > bestCombinationWeight) {
           bestCombinationWeight = weight
           currentWinners.clear()
-          currentWinners.add(player.userId)
+          currentWinners.add(player.id)
         } else if (weight === bestCombinationWeight) {
-          currentWinners.add(player.userId)
+          currentWinners.add(player.id)
         }
       })
 
       this.players.forEach((player) => {
         player.betAmount -= minBetAmount
 
-        if (currentWinners.has(player.userId)) {
+        if (currentWinners.has(player.id)) {
           winners.set(
-            player.userId,
-            (winners.get(player.userId) ?? 0) +
+            player.id,
+            (winners.get(player.id) ?? 0) +
               (minBetAmount * playersWithBetsCount) / currentWinners.size,
           )
         }
@@ -342,7 +326,7 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
     }
 
     this.players.forEach((player) => {
-      player.balance += winners.get(player.userId) ?? 0
+      player.balance += winners.get(player.id) ?? 0
 
       if (player.balance === 0) {
         player.hasLost = true
@@ -371,14 +355,14 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
     return index
   }
 
-  getNextRound(round: POKER_ROUND): POKER_ROUND {
+  getNextRound(round: ROUND): ROUND {
     switch (round) {
-      case POKER_ROUND.PREFLOP:
-        return POKER_ROUND.FLOP
-      case POKER_ROUND.FLOP:
-        return POKER_ROUND.TURN
+      case ROUND.PREFLOP:
+        return ROUND.FLOP
+      case ROUND.FLOP:
+        return ROUND.TURN
       default:
-        return POKER_ROUND.RIVER
+        return ROUND.RIVER
     }
   }
 }

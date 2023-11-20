@@ -1,13 +1,12 @@
-export enum POKER_ROUND {
+export enum ROUND {
   PREFLOP = 'PREFLOP',
   FLOP = 'FLOP',
   TURN = 'TURN',
   RIVER = 'RIVER',
 }
 
-export type PokerPlayer = {
+export type PlayerData = {
   id: string
-  userId: string
   cards: number[]
   balance: number
   betAmount: number
@@ -16,40 +15,18 @@ export type PokerPlayer = {
   hasTurned: boolean
 }
 
-export type PokerState = {
+export type RoomData = {
   id: string
-  roomId: string
   cards: number[]
-  round: POKER_ROUND
+  round: ROUND
   dealsCount: number
   dealerIndex: number
   currentPlayerIndex: number
-  players: PokerPlayer[]
+  players: PlayerData[]
 }
 
-export interface PokerStateStorage {
-  upsertRoom(params: {
-    where: {
-      roomId: string
-    }
-    create: Omit<PokerState, 'id' | 'players'>
-    update: Partial<PokerState>
-  }): Promise<PokerState>
-
-  updateRoom(params: {
-    where: {
-      id: string
-    }
-    data: Omit<PokerState, 'id' | 'roomId'>
-  }): Promise<void>
-
-  deleteRoom(params: {
-    where: {
-      id: string
-    }
-  }): Promise<void>
-
-  createPlayer(params: {
-    data: Omit<PokerPlayer, 'id'> & { stateId: string }
-  }): Promise<PokerPlayer>
+export interface RoomStorage {
+  get(id: string): Promise<RoomData | undefined>
+  set(id: string, room: RoomData): Promise<void>
+  delete(id: string): Promise<void>
 }
