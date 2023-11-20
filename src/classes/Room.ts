@@ -21,6 +21,7 @@ export type RoomEvents<RoomPayload, PlayerPayload> = {
     bigBlind: Player<PlayerPayload>
   }) => void
   dealEnded: (data: {
+    tableCards: number[]
     players: {
       player: Player<PlayerPayload>
       wonAmount: number
@@ -396,6 +397,7 @@ export class Room<
     )
 
     this.emit('dealEnded', {
+      tableCards: roomCopy.cards,
       players: roomCopy.players.map((player) => ({
         player,
         wonAmount: winners.get(player.id) ?? 0,
