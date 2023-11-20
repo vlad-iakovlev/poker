@@ -21,9 +21,9 @@ type Winner<PlayerPayload> = {
 export type RoomEvents<RoomPayload, PlayerPayload> = {
   nextDeal: (data: {
     playersInDeal: Player<PlayerPayload>[]
-    dealerId: string
-    smallBlindId: string
-    bigBlindId: string
+    dealer: Player<PlayerPayload>
+    smallBlind: Player<PlayerPayload>
+    bigBlind: Player<PlayerPayload>
   }) => void
   dealEnded: (data: { winners: Winner<PlayerPayload>[] }) => void
   nextTurn: (data: { player: Player<PlayerPayload> }) => void
@@ -180,9 +180,9 @@ export class Room<
 
     this.emit('nextDeal', {
       playersInDeal: this.players.filter((player) => !player.hasLost),
-      dealerId: this.players[this.dealerIndex].id,
-      smallBlindId: this.players[smallBlindIndex].id,
-      bigBlindId: this.players[bigBlindIndex].id,
+      dealer: this.players[this.dealerIndex],
+      smallBlind: this.players[smallBlindIndex],
+      bigBlind: this.players[bigBlindIndex],
     })
     await this.nextTurn()
   }
