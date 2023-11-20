@@ -27,6 +27,6 @@ export type RoomData = {
 
 export interface RoomStorage {
   get(id: string): Promise<RoomData | undefined>
-  set(id: string, room: RoomData): Promise<void>
+  set(id: string, roomData: RoomData): Promise<void>
   delete(id: string): Promise<void>
 }

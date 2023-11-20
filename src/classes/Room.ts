@@ -39,7 +39,7 @@ export class Room extends EventEmitter<RoomEvents> {
   currentPlayerIndex: number
   players: Player[]
 
-  private constructor(params: RoomParams, roomData: RoomData) {
+  constructor(params: RoomParams, roomData: RoomData) {
     super()
 
     this.storage = params.storage
