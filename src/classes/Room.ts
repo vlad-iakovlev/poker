@@ -79,7 +79,7 @@ export class Room<
     id: string,
     params: RoomParams<RoomPayload, PlayerPayload>,
     payload: RoomPayload,
-  ): Promise<Room> {
+  ): Promise<Room<RoomPayload, PlayerPayload>> {
     const roomData: RoomData<RoomPayload, PlayerPayload> = {
       id,
       cards: [],
@@ -98,7 +98,7 @@ export class Room<
   static async load<RoomPayload = any, PlayerPayload = any>(
     id: string,
     params: RoomParams<RoomPayload, PlayerPayload>,
-  ): Promise<Room | undefined> {
+  ): Promise<Room<RoomPayload, PlayerPayload> | undefined> {
     const roomData = await params.storage.get(id)
     if (!roomData) return
     return new Room<RoomPayload, PlayerPayload>(params, roomData)
