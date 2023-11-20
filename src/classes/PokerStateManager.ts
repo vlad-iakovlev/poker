@@ -73,7 +73,6 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
         dealsCount: 0,
         dealerIndex: 0,
         currentPlayerIndex: 0,
-        players: [],
       },
       update: {},
     })
@@ -125,6 +124,7 @@ export class PokerStateManager extends EventEmitter<PokerStateManagerEvents> {
   async addPlayer(params: { userId: string; balance: number }) {
     const playerData = await this.storage.createPlayer({
       data: {
+        stateId: this.id,
         userId: params.userId,
         cards: [],
         balance: params.balance,

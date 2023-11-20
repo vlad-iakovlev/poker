@@ -32,7 +32,7 @@ export interface PokerStateStorage {
     where: {
       roomId: string
     }
-    create: Omit<PokerState, 'id'>
+    create: Omit<PokerState, 'id' | 'players'>
     update: Partial<PokerState>
   }): Promise<PokerState>
 
@@ -49,5 +49,7 @@ export interface PokerStateStorage {
     }
   }): Promise<void>
 
-  createPlayer(params: { data: Omit<PokerPlayer, 'id'> }): Promise<PokerPlayer>
+  createPlayer(params: {
+    data: Omit<PokerPlayer, 'id'> & { stateId: string }
+  }): Promise<PokerPlayer>
 }
