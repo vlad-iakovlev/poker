@@ -5,7 +5,8 @@ export enum ROUND {
   RIVER = 'RIVER',
 }
 
-export type PlayerData = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PlayerData<Payload = any> = {
   id: string
   cards: number[]
   balance: number
@@ -13,20 +14,24 @@ export type PlayerData = {
   hasFolded: boolean
   hasLost: boolean
   hasTurned: boolean
+  payload: Payload
 }
 
-export type RoomData = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RoomData<RoomPayload = any, PlayerPayload = any> = {
   id: string
   cards: number[]
   round: ROUND
   dealsCount: number
   dealerIndex: number
   currentPlayerIndex: number
-  players: PlayerData[]
+  players: PlayerData<PlayerPayload>[]
+  payload: RoomPayload
 }
 
-export interface RoomStorage {
-  get(id: string): Promise<RoomData | undefined>
-  set(id: string, roomData: RoomData): Promise<void>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface RoomStorage<RoomPayload = any, PlayerPayload = any> {
+  get(id: string): Promise<RoomData<RoomPayload, PlayerPayload> | undefined>
+  set(id: string, roomData: RoomData<RoomPayload, PlayerPayload>): Promise<void>
   delete(id: string): Promise<void>
 }

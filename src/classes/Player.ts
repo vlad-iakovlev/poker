@@ -7,7 +7,8 @@ export type PlayerParams = {
   room: Room
 }
 
-export class Player {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export class Player<Payload = any> {
   room: Room
 
   id: string
@@ -17,8 +18,9 @@ export class Player {
   hasFolded: boolean
   hasLost: boolean
   hasTurned: boolean
+  payload: Payload
 
-  constructor(room: Room, playerData: PlayerData) {
+  constructor(room: Room, playerData: PlayerData<Payload>) {
     this.room = room
 
     this.id = playerData.id
@@ -28,6 +30,7 @@ export class Player {
     this.hasFolded = playerData.hasFolded
     this.hasLost = playerData.hasLost
     this.hasTurned = playerData.hasTurned
+    this.payload = playerData.payload
   }
 
   // TODO: memoize

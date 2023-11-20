@@ -6,28 +6,41 @@ import { shuffle } from '../utils/shuffle.js'
 import { BaseError } from './BaseError.js'
 import { Player } from './Player.js'
 
-export type RoomParams = {
-  storage: RoomStorage
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RoomParams<RoomPayload = any, PlayerPayload = any> = {
+  storage: RoomStorage<RoomPayload, PlayerPayload>
   startingBaseBetAmount: number
 }
 
-export type RoomEvents = {
+type Winner<PlayerPayload> = {
+  player: Player<PlayerPayload>
+  wonAmount: number
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type RoomEvents<RoomPayload, PlayerPayload> = {
   nextDeal: (data: {
+    playersInDeal: Player<PlayerPayload>[]
     dealerId: string
     smallBlindId: string
     bigBlindId: string
   }) => void
-  dealEnded: (data: { winners: Record<string, number> }) => void
-  nextTurn: (data: { playerId: string }) => void
+  dealEnded: (data: { winners: Winner<PlayerPayload>[] }) => void
+  nextTurn: (data: { player: Player<PlayerPayload> }) => void
   gameEnded: () => void
-  fold: (data: { playerId: string }) => void
-  check: (data: { playerId: string }) => void
-  call: (data: { playerId: string }) => void
-  raise: (data: { playerId: string; amount: number }) => void
-  allIn: (data: { playerId: string }) => void
+  fold: (data: { player: Player<PlayerPayload> }) => void
+  check: (data: { player: Player<PlayerPayload> }) => void
+  call: (data: { player: Player<PlayerPayload> }) => void
+  raise: (data: { player: Player<PlayerPayload>; amount: number }) => void
+  allIn: (data: { player: Player<PlayerPayload> }) => void
 }
 
-export class Room extends EventEmitter<RoomEvents> {
+export class Room<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  RoomPayload = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  PlayerPayload = any,
+> extends EventEmitter<RoomEvents<RoomPayload, PlayerPayload>> {
   storage: RoomStorage
   startingBaseBetAmount: number
 
@@ -37,9 +50,13 @@ export class Room extends EventEmitter<RoomEvents> {
   dealsCount: number
   dealerIndex: number
   currentPlayerIndex: number
-  players: Player[]
+  players: Player<PlayerPayload>[]
+  payload: RoomPayload
 
-  constructor(params: RoomParams, roomData: RoomData) {
+  constructor(
+    params: RoomParams,
+    roomData: RoomData<RoomPayload, PlayerPayload>,
+  ) {
     super()
 
     this.storage = params.storage
@@ -52,12 +69,18 @@ export class Room extends EventEmitter<RoomEvents> {
     this.dealerIndex = roomData.dealerIndex
     this.currentPlayerIndex = roomData.currentPlayerIndex
     this.players = roomData.players.map(
-      (playerData) => new Player(this, playerData),
+      (playerData) => new Player<PlayerPayload>(this, playerData),
     )
+    this.payload = roomData.payload
   }
 
-  static async create(id: string, params: RoomParams): Promise<Room> {
-    const roomData: RoomData = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async create<RoomPayload = any, PlayerPayload = any>(
+    id: string,
+    params: RoomParams<RoomPayload, PlayerPayload>,
+    payload: RoomPayload,
+  ): Promise<Room> {
+    const roomData: RoomData<RoomPayload, PlayerPayload> = {
       id,
       cards: [],
       round: ROUND.PREFLOP,
@@ -65,15 +88,20 @@ export class Room extends EventEmitter<RoomEvents> {
       dealerIndex: 0,
       currentPlayerIndex: 0,
       players: [],
+      payload,
     }
     await params.storage.set(id, roomData)
-    return new Room(params, roomData)
+    return new Room<RoomPayload, PlayerPayload>(params, roomData)
   }
 
-  static async load(id: string, params: RoomParams): Promise<Room | undefined> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async load<RoomPayload = any, PlayerPayload = any>(
+    id: string,
+    params: RoomParams<RoomPayload, PlayerPayload>,
+  ): Promise<Room | undefined> {
     const roomData = await params.storage.get(id)
     if (!roomData) return
-    return new Room(params, roomData)
+    return new Room<RoomPayload, PlayerPayload>(params, roomData)
   }
 
   async save() {
@@ -92,7 +120,9 @@ export class Room extends EventEmitter<RoomEvents> {
         hasFolded: player.hasFolded,
         hasLost: player.hasLost,
         hasTurned: player.hasTurned,
+        payload: player.payload,
       })),
+      payload: this.payload,
     })
   }
 
@@ -108,20 +138,21 @@ export class Room extends EventEmitter<RoomEvents> {
     return Math.max(...this.players.map((player) => player.betAmount))
   }
 
-  get currentPlayer(): Player {
+  get currentPlayer(): Player<PlayerPayload> {
     return this.players[this.currentPlayerIndex]
   }
 
-  async addPlayer(id: string, params: { balance: number }) {
+  async addPlayer(id: string, balance: number, payload: PlayerPayload) {
     this.players.push(
-      new Player(this, {
+      new Player<PlayerPayload>(this, {
         id,
         cards: [],
-        balance: params.balance,
+        balance,
         betAmount: 0,
         hasFolded: false,
         hasLost: false,
         hasTurned: false,
+        payload,
       }),
     )
     await this.save()
@@ -148,6 +179,7 @@ export class Room extends EventEmitter<RoomEvents> {
     await this.save()
 
     this.emit('nextDeal', {
+      playersInDeal: this.players.filter((player) => !player.hasLost),
       dealerId: this.players[this.dealerIndex].id,
       smallBlindId: this.players[smallBlindIndex].id,
       bigBlindId: this.players[bigBlindIndex].id,
@@ -171,7 +203,7 @@ export class Room extends EventEmitter<RoomEvents> {
 
     this.currentPlayer.hasFolded = true
     this.currentPlayer.hasTurned = true
-    this.emit('fold', { playerId })
+    this.emit('fold', { player: this.currentPlayer })
 
     await this.nextTurn()
   }
@@ -186,7 +218,7 @@ export class Room extends EventEmitter<RoomEvents> {
     }
 
     this.currentPlayer.hasTurned = true
-    this.emit('check', { playerId })
+    this.emit('check', { player: this.currentPlayer })
 
     await this.nextTurn()
   }
@@ -202,7 +234,7 @@ export class Room extends EventEmitter<RoomEvents> {
 
     this.currentPlayer.increaseBet(this.currentPlayer.callAmount)
     this.currentPlayer.hasTurned = true
-    this.emit('call', { playerId })
+    this.emit('call', { player: this.currentPlayer })
 
     await this.nextTurn()
   }
@@ -226,7 +258,7 @@ export class Room extends EventEmitter<RoomEvents> {
 
     this.currentPlayer.increaseBet(this.currentPlayer.callAmount + amount)
     this.currentPlayer.hasTurned = true
-    this.emit('raise', { playerId, amount })
+    this.emit('raise', { player: this.currentPlayer, amount })
 
     await this.nextTurn()
   }
@@ -242,7 +274,7 @@ export class Room extends EventEmitter<RoomEvents> {
 
     this.currentPlayer.increaseBet(this.currentPlayer.balance)
     this.currentPlayer.hasTurned = true
-    this.emit('allIn', { playerId })
+    this.emit('allIn', { player: this.currentPlayer })
 
     await this.nextTurn()
   }
@@ -278,7 +310,7 @@ export class Room extends EventEmitter<RoomEvents> {
     this.currentPlayerIndex = this.getNextPlayerIndex(this.currentPlayerIndex)
     await this.save()
 
-    this.emit('nextTurn', { playerId: this.currentPlayer.id })
+    this.emit('nextTurn', { player: this.currentPlayer })
   }
 
   async endDeal() {
@@ -333,7 +365,15 @@ export class Room extends EventEmitter<RoomEvents> {
       }
     })
 
-    this.emit('dealEnded', { winners: Object.fromEntries(winners) })
+    this.emit('dealEnded', {
+      winners: this.players.reduce<Winner<PlayerPayload>[]>((acc, player) => {
+        const wonAmount = winners.get(player.id) ?? 0
+        if (wonAmount) {
+          acc.push({ player, wonAmount })
+        }
+        return acc
+      }, []),
+    })
 
     if (this.players.filter((player) => !player.hasLost).length < 2) {
       await this.endGame()
