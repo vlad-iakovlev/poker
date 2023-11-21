@@ -292,6 +292,14 @@ export class Room<
 
     if (
       this.players.every(
+        (player) => player.hasLost || player.hasFolded || !player.balance,
+      )
+    ) {
+      return this.endDeal()
+    }
+
+    if (
+      this.players.every(
         (player) =>
           player.hasLost ||
           player.hasFolded ||
