@@ -61,7 +61,12 @@ export class Player<Payload = any> {
   }
 
   get canCall(): boolean {
-    return !this.hasLost && !this.hasFolded && this.callAmount <= this.balance
+    return (
+      !this.hasLost &&
+      !this.hasFolded &&
+      !!this.callAmount &&
+      this.callAmount <= this.balance
+    )
   }
 
   get canRaise(): boolean {
