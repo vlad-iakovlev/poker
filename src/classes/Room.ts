@@ -346,7 +346,9 @@ export class Room<
       })
 
       this.players.forEach((player) => {
-        player.betAmount -= minBetAmount
+        if (player.betAmount) {
+          player.betAmount -= minBetAmount
+        }
 
         if (currentWinners.has(player.id)) {
           winners.set(
