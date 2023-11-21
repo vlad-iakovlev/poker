@@ -281,33 +281,21 @@ export class Room<
   }
 
   async nextTurn() {
-    // TODO: skip waiting for check when only one player left
+    const playersInDeal = this.players.filter(
+      (player) => !player.hasLost && !player.hasFolded,
+    )
+    const playersWithBalance = playersInDeal.filter((player) => player.balance)
+    const playersWhoNeedToTurn = playersWithBalance.filter(
+      (player) =>
+        !player.hasTurned || player.betAmount !== this.requiredBetAmount,
+    )
 
-    if (
-      this.players.filter((player) => !player.hasLost && !player.hasFolded)
-        .length < 2
-    ) {
+    if (playersInDeal.length < 2) {
       return this.endDeal()
     }
 
-    if (
-      this.players.every(
-        (player) => player.hasLost || player.hasFolded || !player.balance,
-      )
-    ) {
-      return this.endDeal()
-    }
-
-    if (
-      this.players.every(
-        (player) =>
-          player.hasLost ||
-          player.hasFolded ||
-          !player.balance ||
-          (player.hasTurned && player.betAmount === this.requiredBetAmount),
-      )
-    ) {
-      if (this.round === ROUND.RIVER) {
+    if (!playersWhoNeedToTurn.length) {
+      if (this.round === ROUND.RIVER || playersWithBalance.length < 2) {
         return this.endDeal()
       }
 
