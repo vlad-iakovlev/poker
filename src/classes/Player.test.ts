@@ -15,7 +15,7 @@ const mockPlayerHasFolded = jest.fn(() => false)
 const mockPlayerHasLost = jest.fn(() => false)
 const mockPlayerHasTurned = jest.fn(() => false)
 const mockPlayerPayload = jest.fn(() => 'payload-mock')
-const mockPlayer = jest.fn(
+const mockPlayerData = jest.fn(
   () =>
     ({
       id: mockPlayerId(),
@@ -39,7 +39,7 @@ const mockRoomPotAmount = jest.fn(() => 100)
 const mockRoomBaseBetAmount = jest.fn(() => 10)
 const mockRoomRequiredBetAmount = jest.fn(() => 20)
 const mockRoomCurrentPlayer = jest.fn(() => ({ id: 'player-id' }) as Player)
-const mockPokerStateManager = jest.fn(
+const mockRoom = jest.fn(
   () =>
     ({
       id: mockRoomId(),
@@ -58,7 +58,7 @@ const mockPokerStateManager = jest.fn(
 describe('PokerPlayerManager', () => {
   let player: Player<string>
   const resetPlayer = () => {
-    player = new Player<string>(mockPokerStateManager(), mockPlayer())
+    player = new Player<string>(mockRoom(), mockPlayerData())
   }
 
   beforeEach(() => {
@@ -68,7 +68,7 @@ describe('PokerPlayerManager', () => {
 
   describe('#constructor', () => {
     it('should set all props', () => {
-      expect(player.room).toStrictEqual(mockPokerStateManager())
+      expect(player.room).toStrictEqual(mockRoom())
       expect(player.id).toBe(mockPlayerId())
       expect(player.cards).toStrictEqual(mockPlayerCards())
       expect(player.balance).toBe(mockPlayerBalance())
