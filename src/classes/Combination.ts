@@ -12,6 +12,9 @@ export class Combination {
     this.subset = subset
   }
 
+  /**
+   * Weight of combination. Used for comparing combinations
+   */
   get weight() {
     return (
       this.level * 1e10 +
@@ -23,6 +26,9 @@ export class Combination {
     )
   }
 
+  /**
+   * Get best combination from given cards
+   */
   static getBest(cards: number[]): Combination | undefined {
     return R.pipe(
       cards,

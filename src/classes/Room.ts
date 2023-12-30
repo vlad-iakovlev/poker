@@ -14,12 +14,19 @@ export type RoomParams<RoomPayload = any, PlayerPayload = any> = {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type RoomEvents<RoomPayload, PlayerPayload> = {
+  /**
+   * Emitted when deal starts
+   */
   nextDeal: (data: {
     players: Player<PlayerPayload>[]
     dealer: Player<PlayerPayload>
     smallBlind: Player<PlayerPayload>
     bigBlind: Player<PlayerPayload>
   }) => void
+
+  /**
+   * Emitted when deal ends
+   */
   dealEnded: (data: {
     tableCards: number[]
     players: {
@@ -27,12 +34,40 @@ export type RoomEvents<RoomPayload, PlayerPayload> = {
       wonAmount: number
     }[]
   }) => void
+
+  /**
+   * Emitted when player's turn starts
+   */
   nextTurn: (data: { player: Player<PlayerPayload> }) => void
+
+  /**
+   * Emitted when game ends
+   */
   gameEnded: () => void
+
+  /**
+   * Emitted when player folds
+   */
   fold: (data: { player: Player<PlayerPayload> }) => void
+
+  /**
+   * Emitted when player checks
+   */
   check: (data: { player: Player<PlayerPayload> }) => void
+
+  /**
+   * Emitted when player calls
+   */
   call: (data: { player: Player<PlayerPayload> }) => void
+
+  /**
+   * Emitted when player raises
+   */
   raise: (data: { player: Player<PlayerPayload>; amount: number }) => void
+
+  /**
+   * Emitted when player goes all-in
+   */
   allIn: (data: { player: Player<PlayerPayload> }) => void
 }
 
@@ -75,6 +110,9 @@ export class Room<
     this.payload = roomData.payload
   }
 
+  /**
+   * Create a new room
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async create<RoomPayload = any, PlayerPayload = any>(
     id: string,
@@ -95,6 +133,9 @@ export class Room<
     return new Room<RoomPayload, PlayerPayload>(params, roomData)
   }
 
+  /**
+   * Load room from storage
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async load<RoomPayload = any, PlayerPayload = any>(
     id: string,
@@ -131,10 +172,16 @@ export class Room<
     return this.players.reduce((acc, player) => acc + player.betAmount, 0)
   }
 
+  /**
+   * Bet amount for current deal
+   */
   get baseBetAmount(): number {
     return (Math.floor(this.dealsCount / 4) + 1) * this.startingBaseBetAmount
   }
 
+  /**
+   * Amount that each player should have bet in order to continue playing
+   */
   get requiredBetAmount(): number {
     return Math.max(...this.players.map((player) => player.betAmount))
   }
@@ -143,6 +190,9 @@ export class Room<
     return this.players[this.currentPlayerIndex]
   }
 
+  /**
+   * Add player to room
+   */
   async addPlayer(id: string, balance: number, payload: PlayerPayload) {
     this.players.push(
       new Player<PlayerPayload>(this, {
@@ -159,6 +209,9 @@ export class Room<
     await this.save()
   }
 
+  /**
+   * Deal cards. Used to start a game
+   */
   async dealCards() {
     const deck = shuffle(R.range(0, 52))
     this.dealsCount++
@@ -188,11 +241,17 @@ export class Room<
     await this.nextTurn()
   }
 
+  /**
+   * End game. Used to stop a game early
+   */
   async endGame() {
     this.emit('gameEnded')
     await this.storage.delete(this.id)
   }
 
+  /**
+   * Perform a fold action for a given player
+   */
   async fold(playerId: string) {
     if (this.currentPlayer.id !== playerId) {
       throw new BaseError(ERROR_CODE.WRONG_TURN)
@@ -209,6 +268,9 @@ export class Room<
     await this.nextTurn()
   }
 
+  /**
+   * Perform a check action for a given player
+   */
   async check(playerId: string) {
     if (this.currentPlayer.id !== playerId) {
       throw new BaseError(ERROR_CODE.WRONG_TURN)
@@ -224,6 +286,9 @@ export class Room<
     await this.nextTurn()
   }
 
+  /**
+   * Perform a call action for a given player
+   */
   async call(playerId: string) {
     if (this.currentPlayer.id !== playerId) {
       throw new BaseError(ERROR_CODE.WRONG_TURN)
@@ -240,6 +305,9 @@ export class Room<
     await this.nextTurn()
   }
 
+  /**
+   * Perform a raise action for a given player with a given amount
+   */
   async raise(playerId: string, amount: number) {
     if (this.currentPlayer.id !== playerId) {
       throw new BaseError(ERROR_CODE.WRONG_TURN)
@@ -264,6 +332,9 @@ export class Room<
     await this.nextTurn()
   }
 
+  /**
+   * Perform an all-in action for a given player
+   */
   async allIn(playerId: string) {
     if (this.currentPlayer.id !== playerId) {
       throw new BaseError(ERROR_CODE.WRONG_TURN)
@@ -313,12 +384,14 @@ export class Room<
   async endDeal() {
     const winners = new Map<string, number>()
 
+    // Loops until no one has any bets left. Used to properly count all-ins
     while (this.potAmount) {
       let playersWithBetsCount = 0
       let minBetAmount = Infinity
       let bestCombinationWeight = 0
       const currentWinners = new Set<string>()
 
+      // Calculates minimum bet amount and finds winners with bets left
       this.players.forEach((player) => {
         if (!player.betAmount) return
 
@@ -341,29 +414,30 @@ export class Room<
         }
       })
 
+      const wonAmount =
+        (minBetAmount * playersWithBetsCount) / currentWinners.size
+
+      // Updates bets and winners
       this.players.forEach((player) => {
         if (player.betAmount) {
           player.betAmount -= minBetAmount
         }
 
         if (currentWinners.has(player.id)) {
-          winners.set(
-            player.id,
-            (winners.get(player.id) ?? 0) +
-              (minBetAmount * playersWithBetsCount) / currentWinners.size,
-          )
+          player.balance += wonAmount
+          winners.set(player.id, (winners.get(player.id) ?? 0) + wonAmount)
         }
       })
     }
 
+    // Marks players who have lost
     this.players.forEach((player) => {
-      player.balance += winners.get(player.id) ?? 0
-
       if (player.balance === 0) {
         player.hasLost = true
       }
     })
 
+    // Creates a copy of the room to emit the dealEnded event with the correct data
     const roomCopy = new Room<RoomPayload, PlayerPayload>(
       {
         storage: {
@@ -402,6 +476,7 @@ export class Room<
       })),
     })
 
+    // Ends the game if there are less than 2 players left, or starts a new deal
     if (this.players.filter((player) => !player.hasLost).length < 2) {
       await this.endGame()
     } else {

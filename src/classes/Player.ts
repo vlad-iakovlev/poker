@@ -33,11 +33,17 @@ export class Player<Payload = any> {
     this.payload = playerData.payload
   }
 
+  /**
+   * Best combination built from player and room cards
+   */
   // TODO: memoize
   get bestCombination(): Combination | undefined {
     return Combination.getBest([...this.room.cards, ...this.cards])
   }
 
+  /**
+   * Amount that player should pay to call
+   */
   get callAmount(): number {
     return this.room.requiredBetAmount - this.betAmount
   }
