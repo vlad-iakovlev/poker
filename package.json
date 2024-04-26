@@ -16,15 +16,15 @@
     "test": "jest --coverage",
     "test:ci": "jest"
   },
-  "repository": "https://github.com/vlad-yakovlev/poker.git",
+  "repository": "https://github.com/vlad-iakovlev/poker.git",
   "keywords": [
     "poker",
     "texas hold'em"
   ],
   "author": "Vladislav Yakovlev",
   "license": "MIT",
-  "bugs": "https://github.com/vlad-yakovlev/poker/issues",
-  "homepage": "https://github.com/vlad-yakovlev/poker#readme",
+  "bugs": "https://github.com/vlad-iakovlev/poker/issues",
+  "homepage": "https://github.com/vlad-iakovlev/poker#readme",
   "dependencies": {
     "eventemitter3": "^5.0.1",
     "remeda": "^1.60.1"
