@@ -430,13 +430,6 @@ export class Room<
       })
     }
 
-    // Marks players who have lost
-    this.players.forEach((player) => {
-      if (player.balance === 0) {
-        player.hasLost = true
-      }
-    })
-
     // Creates a copy of the room to emit the dealEnded event with the correct data
     const roomCopy = new Room<RoomPayload, PlayerPayload>(
       {
@@ -470,10 +463,19 @@ export class Room<
 
     this.emit('dealEnded', {
       tableCards: roomCopy.cards,
-      players: roomCopy.players.map((player) => ({
-        player,
-        wonAmount: winners.get(player.id) ?? 0,
-      })),
+      players: roomCopy.players
+        .filter((player) => !player.hasLost)
+        .map((player) => ({
+          player,
+          wonAmount: winners.get(player.id) ?? 0,
+        })),
+    })
+
+    // Marks players who have lost
+    this.players.forEach((player) => {
+      if (player.balance === 0) {
+        player.hasLost = true
+      }
     })
 
     // Ends the game if there are less than 2 players left, or starts a new deal
