@@ -30,7 +30,7 @@ export type RoomData<RoomPayload = any, PlayerPayload = any> = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface RoomStorage<RoomPayload = any, PlayerPayload = any> {
+export type RoomStorage<RoomPayload = any, PlayerPayload = any> = {
   get(id: string): Promise<RoomData<RoomPayload, PlayerPayload> | undefined>
   set(id: string, roomData: RoomData<RoomPayload, PlayerPayload>): Promise<void>
   delete(id: string): Promise<void>
