@@ -1,3 +1,5 @@
+import { beforeEach } from 'node:test'
+import { describe, expect, test, vi } from 'vitest'
 import {
   COMBINATION_LEVEL,
   Combination,
@@ -7,15 +9,15 @@ import {
 } from '../index.js'
 import { Player } from './Player.js'
 
-const mockPlayerId = jest.fn(() => 'player-id')
-const mockPlayerCards = jest.fn(() => [6, 7])
-const mockPlayerBalance = jest.fn(() => 900)
-const mockPlayerBetAmount = jest.fn(() => 10)
-const mockPlayerHasFolded = jest.fn(() => false)
-const mockPlayerHasLost = jest.fn(() => false)
-const mockPlayerHasTurned = jest.fn(() => false)
-const mockPlayerPayload = jest.fn(() => 'payload-mock')
-const mockPlayerData = jest.fn(
+const mockPlayerId = vi.fn(() => 'player-id')
+const mockPlayerCards = vi.fn(() => [6, 7])
+const mockPlayerBalance = vi.fn(() => 900)
+const mockPlayerBetAmount = vi.fn(() => 10)
+const mockPlayerHasFolded = vi.fn(() => false)
+const mockPlayerHasLost = vi.fn(() => false)
+const mockPlayerHasTurned = vi.fn(() => false)
+const mockPlayerPayload = vi.fn(() => 'payload-mock')
+const mockPlayerData = vi.fn(
   () =>
     ({
       id: mockPlayerId(),
@@ -29,17 +31,17 @@ const mockPlayerData = jest.fn(
     }) as Player<string>,
 )
 
-const mockRoomId = jest.fn(() => 'state-id')
-const mockRoomCards = jest.fn(() => [1, 2, 3, 4, 5])
-const mockRoomRound = jest.fn(() => ROUND.TURN)
-const mockRoomDealsCount = jest.fn(() => 3)
-const mockRoomDealerIndex = jest.fn(() => 0)
-const mockRoomCurrentPlayerIndex = jest.fn(() => 3)
-const mockRoomPotAmount = jest.fn(() => 100)
-const mockRoomBaseBetAmount = jest.fn(() => 10)
-const mockRoomRequiredBetAmount = jest.fn(() => 20)
-const mockRoomCurrentPlayer = jest.fn(() => ({ id: 'player-id' }) as Player)
-const mockRoom = jest.fn(
+const mockRoomId = vi.fn(() => 'state-id')
+const mockRoomCards = vi.fn(() => [1, 2, 3, 4, 5])
+const mockRoomRound = vi.fn(() => ROUND.TURN)
+const mockRoomDealsCount = vi.fn(() => 3)
+const mockRoomDealerIndex = vi.fn(() => 0)
+const mockRoomCurrentPlayerIndex = vi.fn(() => 3)
+const mockRoomPotAmount = vi.fn(() => 100)
+const mockRoomBaseBetAmount = vi.fn(() => 10)
+const mockRoomRequiredBetAmount = vi.fn(() => 20)
+const mockRoomCurrentPlayer = vi.fn(() => ({ id: 'player-id' }) as Player)
+const mockRoom = vi.fn(
   () =>
     ({
       id: mockRoomId(),
@@ -55,19 +57,17 @@ const mockRoom = jest.fn(
     }) as Room<any, string>,
 )
 
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+const createPlayer = () => new Player<string>(mockRoom(), mockPlayerData())
+
 describe('PokerPlayerManager', () => {
-  let player: Player<string>
-  const resetPlayer = () => {
-    player = new Player<string>(mockRoom(), mockPlayerData())
-  }
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-    resetPlayer()
-  })
-
   describe('#constructor', () => {
-    it('should set all props', () => {
+    test('should set all props', () => {
+      const player = createPlayer()
+
       expect(player.room).toStrictEqual(mockRoom())
       expect(player.id).toBe(mockPlayerId())
       expect(player.cards).toStrictEqual(mockPlayerCards())
@@ -81,188 +81,206 @@ describe('PokerPlayerManager', () => {
   })
 
   describe('#callAmount', () => {
-    it('should return topBetAmount - player.betAmount', () => {
+    test('should return topBetAmount - player.betAmount', () => {
+      const player = createPlayer()
+
       expect(player.callAmount).toBe(10)
     })
   })
 
   describe('#minRaiseAmount', () => {
-    it('should return baseBetAmount', () => {
+    test('should return baseBetAmount', () => {
+      const player = createPlayer()
+
       expect(player.minRaiseAmount).toBe(10)
     })
   })
 
   describe('#maxRaiseAmount', () => {
-    it('should return player.balance - player.callAmount', () => {
+    test('should return player.balance - player.callAmount', () => {
+      const player = createPlayer()
+
       expect(player.minRaiseAmount).toBe(10)
     })
   })
 
   describe('#canFold', () => {
-    it('should return true', () => {
+    test('should return true', () => {
+      const player = createPlayer()
+
       expect(player.canFold).toBe(true)
     })
 
-    it('should return false if player.hasLost', () => {
+    test('should return false if player.hasLost', () => {
       mockPlayerHasLost.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canFold).toBe(false)
     })
 
-    it('should return false if player.hasFolded', () => {
+    test('should return false if player.hasFolded', () => {
       mockPlayerHasFolded.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canFold).toBe(false)
     })
 
-    it('should return false if player.balance is 0', () => {
+    test('should return false if player.balance is 0', () => {
       mockPlayerBalance.mockReturnValueOnce(0)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canFold).toBe(false)
     })
   })
 
   describe('#canCheck', () => {
-    it('should return true if player.callAmount is 0', () => {
+    test('should return true if player.callAmount is 0', () => {
       mockPlayerBetAmount.mockReturnValueOnce(20)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCheck).toBe(true)
     })
 
-    it('should return false if player.callAmount is not 0', () => {
+    test('should return false if player.callAmount is not 0', () => {
+      const player = createPlayer()
+
       expect(player.canCheck).toBe(false)
     })
 
-    it('should return false if player.hasLost', () => {
+    test('should return false if player.hasLost', () => {
       mockPlayerHasLost.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCheck).toBe(false)
     })
 
-    it('should return false if player.hasFolded', () => {
+    test('should return false if player.hasFolded', () => {
       mockPlayerHasFolded.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCheck).toBe(false)
     })
 
-    it('should return false if player.balance is 0', () => {
+    test('should return false if player.balance is 0', () => {
       mockPlayerBalance.mockReturnValueOnce(0)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCheck).toBe(false)
     })
   })
 
   describe('#canCall', () => {
-    it('should return true if player has enough balance', () => {
+    test('should return true if player has enough balance', () => {
+      const player = createPlayer()
+
       expect(player.canCall).toBe(true)
     })
 
-    it('should return false if player has not enough balance', () => {
+    test('should return false if player has not enough balance', () => {
       mockPlayerBalance.mockReturnValueOnce(5)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCall).toBe(false)
     })
 
-    it('should return false if player.callAmount is 0', () => {
+    test('should return false if player.callAmount is 0', () => {
       mockPlayerBetAmount.mockReturnValueOnce(20)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCall).toBe(false)
     })
 
-    it('should return false if player.hasLost', () => {
+    test('should return false if player.hasLost', () => {
       mockPlayerHasLost.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCall).toBe(false)
     })
 
-    it('should return false if player.hasFolded', () => {
+    test('should return false if player.hasFolded', () => {
       mockPlayerHasFolded.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCall).toBe(false)
     })
 
-    it('should return false if player.balance is 0', () => {
+    test('should return false if player.balance is 0', () => {
       mockPlayerBalance.mockReturnValueOnce(0)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canCall).toBe(false)
     })
   })
 
   describe('#canRaise', () => {
-    it('should return true if player.minRaiseAmount <= player.maxRaiseAmount', () => {
+    test('should return true if player.minRaiseAmount <= player.maxRaiseAmount', () => {
+      const player = createPlayer()
+
       expect(player.canRaise).toBe(true)
     })
 
-    it('should return false if player.minRaiseAmount > player.maxRaiseAmount', () => {
+    test('should return false if player.minRaiseAmount > player.maxRaiseAmount', () => {
       mockPlayerBalance.mockReturnValueOnce(10)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canRaise).toBe(false)
     })
 
-    it('should return false if player.hasLost', () => {
+    test('should return false if player.hasLost', () => {
       mockPlayerHasLost.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canRaise).toBe(false)
     })
 
-    it('should return false if player.hasFolded', () => {
+    test('should return false if player.hasFolded', () => {
       mockPlayerHasFolded.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canRaise).toBe(false)
     })
 
-    it('should return false if player.balance is 0', () => {
+    test('should return false if player.balance is 0', () => {
       mockPlayerBalance.mockReturnValueOnce(0)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canRaise).toBe(false)
     })
   })
 
   describe('#canAllIn', () => {
-    it('should return true', () => {
+    test('should return true', () => {
+      const player = createPlayer()
+
       expect(player.canAllIn).toBe(true)
     })
 
-    it('should return false if player.hasLost', () => {
+    test('should return false if player.hasLost', () => {
       mockPlayerHasLost.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canAllIn).toBe(false)
     })
 
-    it('should return false if player.hasFolded', () => {
+    test('should return false if player.hasFolded', () => {
       mockPlayerHasFolded.mockReturnValueOnce(true)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canAllIn).toBe(false)
     })
 
-    it('should return false if player.balance is 0', () => {
+    test('should return false if player.balance is 0', () => {
       mockPlayerBalance.mockReturnValueOnce(0)
-      resetPlayer()
+      const player = createPlayer()
 
       expect(player.canAllIn).toBe(false)
     })
   })
 
   describe('#bestCombination', () => {
-    it('should return best combination', () => {
+    test('should return best combination', () => {
+      const player = createPlayer()
+
       expect(player.bestCombination).toStrictEqual(
         new Combination(
           COMBINATION_LEVEL.FOUR_OF_KIND,
@@ -273,13 +291,17 @@ describe('PokerPlayerManager', () => {
   })
 
   describe('#increaseBet', () => {
-    it('should increase bet', () => {
+    test('should increase bet', () => {
+      const player = createPlayer()
+
       player.increaseBet(100)
 
       expect(player.betAmount).toBe(110)
     })
 
-    it('should not exceed player balance', () => {
+    test('should not exceed player balance', () => {
+      const player = createPlayer()
+
       player.increaseBet(100500)
 
       expect(player.betAmount).toBe(910)

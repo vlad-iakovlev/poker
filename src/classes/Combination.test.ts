@@ -1,10 +1,11 @@
+import { describe, expect, test } from 'vitest'
 import { COMBINATION_LEVEL } from '../types/card.js'
 import { Combination } from './Combination.js'
 import { Subset } from './Subset.js'
 
 describe('Combination', () => {
   describe('#constructor', () => {
-    it('should set level and subset', () => {
+    test('should set level and subset', () => {
       const level = COMBINATION_LEVEL.PAIR
       const subset = new Subset([1, 2, 3, 4, 5])
 
@@ -16,7 +17,7 @@ describe('Combination', () => {
   })
 
   describe('#weight', () => {
-    it('should return weight', () => {
+    test('should return weight', () => {
       const level = COMBINATION_LEVEL.PAIR
       const subset = new Subset([1, 2, 3, 4, 5])
 
@@ -27,7 +28,7 @@ describe('Combination', () => {
   })
 
   describe('#getBest', () => {
-    it('should return royal flash combination', () => {
+    test('should return royal flash combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -54,7 +55,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return straight flash combination', () => {
+    test('should return straight flash combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -81,7 +82,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return four of a kind combination', () => {
+    test('should return four of a kind combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -108,7 +109,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return full house combination', () => {
+    test('should return full house combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -135,7 +136,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return flush combination', () => {
+    test('should return flush combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -162,7 +163,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return straight combination', () => {
+    test('should return straight combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -189,7 +190,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return three of a kind combination', () => {
+    test('should return three of a kind combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -216,7 +217,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return two pair combination', () => {
+    test('should return two pair combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -243,7 +244,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return pair combination', () => {
+    test('should return pair combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
@@ -270,7 +271,7 @@ describe('Combination', () => {
       )
     })
 
-    it('should return high card combination', () => {
+    test('should return high card combination', () => {
       const cards = [
         (11 << 2) + 0,
         (8 << 2) + 1,
