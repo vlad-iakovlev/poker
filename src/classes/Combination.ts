@@ -34,9 +34,9 @@ export class Combination {
       cards,
       R.sort((a, b) => b - a),
       Subset.getSubsets,
-      R.map((subset) => {
-        // prettier-ignore
-        return (
+      R.map(
+        (subset) =>
+          // prettier-ignore
           Combination.build(COMBINATION_LEVEL.ROYAL_FLUSH, subset.royalFlush) ??
           Combination.build(COMBINATION_LEVEL.STRAIGHT_FLUSH, subset.straightFlush) ??
           Combination.build(COMBINATION_LEVEL.FOUR_OF_KIND, subset.fourOfKind) ??
@@ -46,9 +46,8 @@ export class Combination {
           Combination.build(COMBINATION_LEVEL.THREE_OF_KIND, subset.threeOfKind) ??
           Combination.build(COMBINATION_LEVEL.TWO_PAIR, subset.twoPair) ??
           Combination.build(COMBINATION_LEVEL.PAIR, subset.pair) ??
-          Combination.build(COMBINATION_LEVEL.HIGH_CARD, subset)
-        )
-      }),
+          Combination.build(COMBINATION_LEVEL.HIGH_CARD, subset),
+      ),
       R.sort((a, b) => a.weight - b.weight),
       R.last(),
     )

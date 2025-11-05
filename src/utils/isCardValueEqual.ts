@@ -1,5 +1,4 @@
 import { getCardValue } from './getCardValue.js'
 
-export const isCardValueEqual = (card1: number, card2: number): boolean => {
-  return getCardValue(card1) === getCardValue(card2)
-}
+export const isCardValueEqual = (card1: number, card2: number): boolean =>
+  getCardValue(card1) === getCardValue(card2)
