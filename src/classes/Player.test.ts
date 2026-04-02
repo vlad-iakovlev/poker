@@ -1,5 +1,4 @@
-import { beforeEach } from 'node:test'
-import { describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   COMBINATION_LEVEL,
   Combination,
@@ -100,7 +99,7 @@ describe('PokerPlayerManager', () => {
     test('should return player.balance - player.callAmount', () => {
       const player = createPlayer()
 
-      expect(player.minRaiseAmount).toBe(10)
+      expect(player.maxRaiseAmount).toBe(890)
     })
   })
 

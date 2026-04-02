@@ -7,4 +7,16 @@ describe('#getCardValue', () => {
 
     expect(value).toBe(3)
   })
+
+  test('should return value for lower deck bound', () => {
+    const value = getCardValue(0)
+
+    expect(value).toBe(0)
+  })
+
+  test('should return value for upper deck bound', () => {
+    const value = getCardValue(51)
+
+    expect(value).toBe(12)
+  })
 })

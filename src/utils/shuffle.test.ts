@@ -11,9 +11,12 @@ describe('#shuffle', () => {
   })
 
   test('should shuffle array', () => {
-    const shuffled = shuffle(['a', 'b', 'c', 'd', 'e'])
+    const source = ['a', 'b', 'c', 'd', 'e']
+
+    const shuffled = shuffle(source)
 
     expect(shuffled).toStrictEqual(['d', 'c', 'a', 'e', 'b'])
+    expect(source).toStrictEqual(['a', 'b', 'c', 'd', 'e'])
   })
 
   test('should accept empty array', () => {

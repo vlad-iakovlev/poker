@@ -7,4 +7,16 @@ describe('#getCardSuit', () => {
 
     expect(suit).toBe(1)
   })
+
+  test('should return suit for lower deck bound', () => {
+    const suit = getCardSuit(0)
+
+    expect(suit).toBe(0)
+  })
+
+  test('should return suit for upper deck bound', () => {
+    const suit = getCardSuit(51)
+
+    expect(suit).toBe(3)
+  })
 })
