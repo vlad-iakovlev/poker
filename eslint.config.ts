@@ -7,15 +7,13 @@ export default defineConfig(
   {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ['eslint.config.ts'],
-        },
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
   },
   {
-    files: ['**/*.test.ts', 'testUtils/**/*'],
+    files: ['**/*.test.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
