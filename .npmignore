@@ -5,7 +5,6 @@
 .vscode
 
 eslint.config.ts
-lefthook.yml
 prettier.config.js
 tsconfig.json
 
