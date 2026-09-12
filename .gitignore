@@ -5,6 +5,7 @@
 .DS_Store
 
 # vitest
+/.vitest
 /coverage
 
 # build
