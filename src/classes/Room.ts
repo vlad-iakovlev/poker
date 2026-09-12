@@ -370,7 +370,7 @@ export class Room<
         return this.endDeal()
       }
 
-      this.players.forEach((player) => void (player.hasTurned = false))
+      this.players.forEach((player) => (player.hasTurned = false))
       this.round = this.getNextRound(this.round)
       this.currentPlayerIndex = this.dealerIndex
     }
