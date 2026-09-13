@@ -27,12 +27,12 @@
   },
   "dependencies": {
     "eventemitter3": "^5.0.4",
-    "remeda": "^2.45.0"
+    "remeda": "^2.48.0"
   },
   "devDependencies": {
-    "@napi-rs/wasm-runtime": "^1.2.3",
+    "@napi-rs/wasm-runtime": "^1.2.4",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.13.4",
     "@vitest/coverage-v8": "^5.0.0",
     "@vlad-iakovlev/eslint-config": "^2.0.1",
     "eslint": "^10.10.0",
