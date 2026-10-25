@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "eventemitter3": "^5.0.4",
-    "remeda": "^2.52.0"
+    "remeda": "^2.53.0"
   },
   "devDependencies": {
     "@napi-rs/wasm-runtime": "^1.2.5",
